@@ -23,7 +23,7 @@ variable "region" {
 
 variable "github_repo" {
   type    = string
-  default = "samblake00/slopeapi"
+  default = "samblake00/slope-api"
 }
 
 variable "github_branch" {

@@ -80,4 +80,4 @@ GitHub Actions deploys on every push to `main` using OIDC, so no AWS keys are st
 5. Push to `main` (or run the workflow from the Actions tab). The API URL is the `api_url` Terraform output.
 6. Invoke the poller Lambda once to seed data.
 
-The deploy role can only be assumed by `samblake00/slopeapi` on `main`. The region is set in `.github/workflows/deploy.yml` (default `us-east-1`) and must match `infra/bootstrap`.
+The deploy role can only be assumed by `samblake00/slope-api` on `main`. The region is set in `.github/workflows/deploy.yml` (default `us-east-1`) and must match `infra/bootstrap`.
