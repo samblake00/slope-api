@@ -13,10 +13,11 @@ def _database_url():
 
 
 class BaseConfig(object):
-    ENABLED_MODULES = {
+    # Order matters: 'api' must register the blueprint before 'ski' attaches its namespace
+    ENABLED_MODULES = (
         'api',
         'ski',
-    }
+    )
 
     SWAGGER_UI_JSONEDITOR = True
 
