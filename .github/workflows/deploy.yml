@@ -38,3 +38,4 @@ jobs:
       - run: terraform -chdir=infra apply -input=false -auto-approve -var="region=${{ env.AWS_REGION }}"
         env:
           TF_VAR_database_url: ${{ secrets.DATABASE_URL }}
+      - run: terraform -chdir=infra output api_url
