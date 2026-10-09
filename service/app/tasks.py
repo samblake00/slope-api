@@ -1,6 +1,6 @@
 from apscheduler.schedulers.background import BackgroundScheduler
 from flask import current_app
-from datetime import datetime
+from datetime import datetime, timedelta
 from .models import db, Provider, Resort, Condition, FetchLog
 from .providers.mock import MockProvider
 
@@ -100,6 +100,15 @@ def poll_providers():
             session.add(log)
             session.commit()
             raise
+
+
+def prune_conditions():
+    """Delete conditions older than CONDITIONS_RETENTION_DAYS; returns rows removed."""
+    days = current_app.config.get('CONDITIONS_RETENTION_DAYS', 7)
+    cutoff = datetime.utcnow() - timedelta(days=days)
+    removed = Condition.query.filter(Condition.fetched_at < cutoff).delete(synchronize_session=False)
+    db.session.commit()
+    return removed
 
 
 def init_scheduler(app):

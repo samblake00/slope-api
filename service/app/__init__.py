@@ -4,14 +4,19 @@ Example RESTful API Server.
 """
 from flask import Flask
 from flask_restx import Api
+from flask_limiter import Limiter
+from flask_limiter.util import get_remote_address
 from .models import db
 import logging
+import os
+
+limiter = Limiter(key_func=get_remote_address)
 
 api_v1 = Api(
     version='1.0',
-    title="FLASK | Ski Conditions API",
+    title="SlopeAPI",
     description=(
-        "This is a FLASK REST API with the ability to shred some gnar."
+        "Open ski resort and conditions data."
     ),
 )
 
@@ -24,10 +29,11 @@ def create_app(flask_config_name=None, **kwargs):
     app: Flask = Flask(__name__, **kwargs)
 
     # Load the config file
-    app.config.from_object('config.DevelopmentConfig')
+    app.config.from_object(flask_config_name or os.environ.get('APP_CONFIG', 'config.DevelopmentConfig'))
 
     # Initialize extensions
     db.init_app(app)
+    limiter.init_app(app)
 
     # Initialize FLASK-RESTPlus
     api_v1.init_app(app)

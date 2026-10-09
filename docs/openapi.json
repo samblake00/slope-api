@@ -1,0 +1,226 @@
+{
+  "swagger": "2.0",
+  "basePath": "/api/v1",
+  "paths": {
+    "/ski/conditions": {
+      "get": {
+        "responses": {
+          "200": {
+            "description": "Success",
+            "schema": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/Condition"
+              }
+            }
+          }
+        },
+        "summary": "List current conditions",
+        "description": "Optional param: resort_id",
+        "operationId": "get_conditions_resource",
+        "parameters": [
+          {
+            "name": "X-Fields",
+            "in": "header",
+            "type": "string",
+            "format": "mask",
+            "description": "An optional fields mask"
+          }
+        ],
+        "tags": [
+          "ski"
+        ]
+      }
+    },
+    "/ski/conditions/{resort_id}": {
+      "parameters": [
+        {
+          "name": "resort_id",
+          "in": "path",
+          "required": true,
+          "type": "integer"
+        }
+      ],
+      "get": {
+        "responses": {
+          "200": {
+            "description": "Success",
+            "schema": {
+              "$ref": "#/definitions/Condition"
+            }
+          }
+        },
+        "summary": "Get conditions for a resort",
+        "operationId": "get_condition_resource",
+        "parameters": [
+          {
+            "name": "X-Fields",
+            "in": "header",
+            "type": "string",
+            "format": "mask",
+            "description": "An optional fields mask"
+          }
+        ],
+        "tags": [
+          "ski"
+        ]
+      }
+    },
+    "/ski/resorts": {
+      "get": {
+        "responses": {
+          "200": {
+            "description": "Success",
+            "schema": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/Resort"
+              }
+            }
+          }
+        },
+        "summary": "List resorts",
+        "description": "Optional query param: name (substring match)",
+        "operationId": "get_resorts_resource",
+        "parameters": [
+          {
+            "name": "X-Fields",
+            "in": "header",
+            "type": "string",
+            "format": "mask",
+            "description": "An optional fields mask"
+          }
+        ],
+        "tags": [
+          "ski"
+        ]
+      }
+    },
+    "/ski/resorts/{resort_id}": {
+      "parameters": [
+        {
+          "name": "resort_id",
+          "in": "path",
+          "required": true,
+          "type": "integer"
+        }
+      ],
+      "get": {
+        "responses": {
+          "200": {
+            "description": "Success",
+            "schema": {
+              "$ref": "#/definitions/Resort"
+            }
+          }
+        },
+        "summary": "Get resort by id",
+        "operationId": "get_resort_resource",
+        "parameters": [
+          {
+            "name": "X-Fields",
+            "in": "header",
+            "type": "string",
+            "format": "mask",
+            "description": "An optional fields mask"
+          }
+        ],
+        "tags": [
+          "ski"
+        ]
+      }
+    }
+  },
+  "info": {
+    "title": "SlopeAPI",
+    "version": "1.0",
+    "description": "Open ski resort and conditions data."
+  },
+  "produces": [
+    "application/json"
+  ],
+  "consumes": [
+    "application/json"
+  ],
+  "tags": [
+    {
+      "name": "ski",
+      "description": "ski resorts and conditions"
+    }
+  ],
+  "definitions": {
+    "Resort": {
+      "required": [
+        "id",
+        "name"
+      ],
+      "properties": {
+        "id": {
+          "type": "integer",
+          "description": "Resort ID"
+        },
+        "name": {
+          "type": "string",
+          "description": "Resort name"
+        },
+        "location": {
+          "type": "string",
+          "description": "Location"
+        },
+        "opens": {
+          "type": "string",
+          "description": "Opening time"
+        },
+        "closes": {
+          "type": "string",
+          "description": "Closing time"
+        },
+        "runs_open": {
+          "type": "integer",
+          "description": "Number of runs open"
+        },
+        "total_runs": {
+          "type": "integer",
+          "description": "Total runs"
+        },
+        "website": {
+          "type": "string",
+          "description": "Resort website URL"
+        }
+      },
+      "type": "object"
+    },
+    "Condition": {
+      "required": [
+        "resort_id"
+      ],
+      "properties": {
+        "resort_id": {
+          "type": "integer",
+          "description": "Resort ID"
+        },
+        "temperature_c": {
+          "type": "number",
+          "description": "Temperature in C"
+        },
+        "snow_depth_cm": {
+          "type": "number",
+          "description": "Snow depth in cm"
+        },
+        "status": {
+          "type": "string",
+          "description": "Current status e.g., open/closed"
+        }
+      },
+      "type": "object"
+    }
+  },
+  "responses": {
+    "ParseError": {
+      "description": "When a mask can't be parsed"
+    },
+    "MaskError": {
+      "description": "When any error occurs on mask"
+    }
+  }
+}
