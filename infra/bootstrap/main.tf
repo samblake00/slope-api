@@ -21,9 +21,10 @@ variable "region" {
   default = "us-east-1"
 }
 
-variable "github_repo" {
-  type    = string
-  default = "samblake00/slope-api"
+variable "github_subject_prefix" {
+  type        = string
+  default     = "repo:samblake00@54966013/slope-api@1113346335"
+  description = "Owner/repo part of the OIDC sub claim. This repo uses GitHub immutable subjects (owner and repo IDs); check with: gh api repos/OWNER/REPO/actions/oidc/customization/sub"
 }
 
 variable "github_branch" {
@@ -85,7 +86,7 @@ resource "aws_iam_role" "deploy" {
       Condition = {
         StringEquals = {
           "token.actions.githubusercontent.com:aud" = "sts.amazonaws.com"
-          "token.actions.githubusercontent.com:sub" = "repo:${var.github_repo}:ref:refs/heads/${var.github_branch}"
+          "token.actions.githubusercontent.com:sub" = "${var.github_subject_prefix}:ref:refs/heads/${var.github_branch}"
         }
       }
     }]

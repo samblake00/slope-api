@@ -59,8 +59,10 @@ Regenerate the OpenAPI spec after changing endpoints: `python scripts/export_ope
 | `RATELIMIT_DEFAULT` | `60 per minute;1000 per day` | Per-IP limit |
 | `RATELIMIT_STORAGE_URI` | `memory://` | Redis URL for shared counters |
 | `CACHE_MAX_AGE_SECONDS` | `300` | `Cache-Control` max-age on successful GETs (also sends `ETag`) |
-| CONDITIONS_RETENTION_DAYS` | `7` | Older conditions are pruned by the poller |
+| `CONDITIONS_RETENTION_DAYS` | `7` | Older conditions are pruned by the poller |
 
 ## Deploying (via Terraform and GitHub Actions)
 
 GitHub Actions deploys on every push to `main` using OIDC, so no AWS keys are stored in GitHub.
+
+The deploy role can only be assumed by `samblake00/slope-api` on `main`, matched by GitHub's immutable OIDC subject (`github_subject_prefix` in `infra/bootstrap/main.tf`). The region is set in `.github/workflows/deploy.yml` (default `us-east-1`).
