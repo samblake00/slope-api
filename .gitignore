@@ -73,3 +73,5 @@ lambda.zip
 *.tfvars
 instance/
 *.db
+.neon
+.env.local

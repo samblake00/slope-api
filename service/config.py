@@ -4,9 +4,11 @@ import os
 
 def _database_url():
     url = os.environ.get('DATABASE_URL', 'sqlite:///dev.db')
-    # Some providers hand out the legacy scheme that SQLAlchemy 2 rejects
-    if url.startswith('postgres://'):
-        url = 'postgresql://' + url[len('postgres://'):]
+    # Normalize to the psycopg2 driver we bundle; plain postgres:// and postgresql://
+    # resolve to different drivers depending on the SQLAlchemy version
+    for prefix in ('postgres://', 'postgresql://'):
+        if url.startswith(prefix):
+            url = 'postgresql+psycopg2://' + url[len(prefix):]
     return url
 
 
