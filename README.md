@@ -61,24 +61,6 @@ Regenerate the OpenAPI spec after changing endpoints: `python scripts/export_ope
 | `CACHE_MAX_AGE_SECONDS` | `300` | `Cache-Control` max-age on successful GETs (also sends `ETag`) |
 | CONDITIONS_RETENTION_DAYS` | `7` | Older conditions are pruned by the poller |
 
-## Deploying (AWS Lambda + EventBridge + free Postgres, via Terraform and GitHub Actions)
+## Deploying (via Terraform and GitHub Actions)
 
 GitHub Actions deploys on every push to `main` using OIDC, so no AWS keys are stored in GitHub.
-
-### One-time setup
-1. Create a free Postgres database (e.g. Neon or Supabase) and copy its URL (with `sslmode=require`).
-2. Install Terraform and the AWS CLI, and log in with an admin user (`aws configure` or `aws sso login`).
-3. Create the state bucket and GitHub deploy role (local state is fine here):
-   ```sh
-   cd infra/bootstrap
-   terraform init
-   terraform apply      # add -var create_oidc_provider=false if the account already has a GitHub OIDC provider
-   ```
-4. In GitHub go to Settings > Secrets and variables > Actions and add, using the outputs from step 3:
-   - `AWS_DEPLOY_ROLE_ARN`: `deploy_role_arn`
-   - `TF_STATE_BUCKET`: `state_bucket`
-   - `DATABASE_URL`: your Postgres URL
-5. Push to `main` (or run the workflow from the Actions tab). The API URL is the `api_url` Terraform output.
-6. Invoke the poller Lambda once to seed data.
-
-The deploy role can only be assumed by `samblake00/slope-api` on `main`. The region is set in `.github/workflows/deploy.yml` (default `us-east-1`) and must match `infra/bootstrap`.
