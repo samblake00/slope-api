@@ -29,6 +29,9 @@
 1. **API Gateway throttle** (`throttle_rate_limit`, `throttle_burst_limit`): hard global cap shared by all containers.
 2. **Flask-Limiter** per IP (`RATELIMIT_DEFAULT`): friendly `429` responses. Counters are per Lambda container unless `RATELIMIT_STORAGE_URI` points at Redis.
 
+## Caching
+Successful GETs carry Cache-Control: public, max-age=300 and an ETag, so a CDN (e.g. Cloudflare free tier) can absorb most reads.
+
 ## Data flow
 1. EventBridge triggers the poller every 30 minutes.
 2. The poller upserts resorts, inserts a conditions row per resort, and deletes conditions older than `CONDITIONS_RETENTION_DAYS`.

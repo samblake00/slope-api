@@ -1,6 +1,6 @@
 # encoding: utf-8
 """
-Flask-RESTplus API registration module
+Flask-RESTX API registration module
 ======================================
 """
 

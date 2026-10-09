@@ -1,8 +1,8 @@
 # encoding: utf-8
 """
-Example RESTful API Server.
+SlopeAPI service: Flask app factory.
 """
-from flask import Flask
+from flask import Flask, request
 from flask_restx import Api
 from flask_limiter import Limiter
 from flask_limiter.util import get_remote_address
@@ -20,22 +20,22 @@ api_v1 = Api(
     ),
 )
 
-def create_app(flask_config_name=None, **kwargs):
+def create_app(config_name=None, **kwargs):
     """
-    Entry point to the Flask RESTful Server application.
+    Create and configure the Flask application.
     """
 
-    # Initialize the Flask-App
+    # Initialize the Flask app
     app: Flask = Flask(__name__, **kwargs)
 
     # Load the config file
-    app.config.from_object(flask_config_name or os.environ.get('APP_CONFIG', 'config.DevelopmentConfig'))
+    app.config.from_object(config_name or os.environ.get('APP_CONFIG', 'config.DevelopmentConfig'))
 
     # Initialize extensions
     db.init_app(app)
     limiter.init_app(app)
 
-    # Initialize FLASK-RESTPlus
+    # Initialize Flask-RESTX
     api_v1.init_app(app)
 
     # Start scheduler (if enabled) — import here to avoid circular imports
@@ -49,5 +49,14 @@ def create_app(flask_config_name=None, **kwargs):
     # Initialize the modules
     from . import modules
     modules.init_app(app)
+
+    @app.after_request
+    def add_cache_headers(response):
+        # Lets a CDN/browser absorb repeat reads; data only changes when the poller runs
+        if request.method == 'GET' and response.status_code == 200 and not response.direct_passthrough:
+            response.headers.setdefault('Cache-Control', f"public, max-age={app.config['CACHE_MAX_AGE_SECONDS']}")
+            response.add_etag()
+            response.make_conditional(request)
+        return response
 
     return app

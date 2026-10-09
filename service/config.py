@@ -28,6 +28,8 @@ class BaseConfig(object):
     RATELIMIT_STORAGE_URI = os.environ.get('RATELIMIT_STORAGE_URI', 'memory://')
     RATELIMIT_HEADERS_ENABLED = True
 
+    CACHE_MAX_AGE_SECONDS = int(os.environ.get('CACHE_MAX_AGE_SECONDS', '300'))
+
     # Scheduler (local development only; Lambda uses EventBridge)
     SCHEDULER_ENABLED = False
     SCHEDULER_POLL_INTERVAL_MINUTES = 30

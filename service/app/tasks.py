@@ -1,4 +1,3 @@
-from apscheduler.schedulers.background import BackgroundScheduler
 from flask import current_app
 from datetime import datetime, timedelta
 from .models import db, Provider, Resort, Condition, FetchLog
@@ -112,7 +111,9 @@ def prune_conditions():
 
 
 def init_scheduler(app):
-    """Initialize a BackgroundScheduler to poll providers."""
+    """Local-development scheduler; in AWS the poller Lambda is triggered by EventBridge."""
+    from apscheduler.schedulers.background import BackgroundScheduler
+
     global _scheduler
     if _scheduler:
         return _scheduler

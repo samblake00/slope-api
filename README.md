@@ -12,7 +12,7 @@ Data is collected on a schedule and served from our own database, so API traffic
 
 | Path | What it is |
 |---|---|
-| `service/` | The Flask app: routes, models, providers, config, local `run.py`, `requirements.txt` |
+| `service/` | The Flask app: routes, models, providers, config, local `run.py`, `requirements.txt` (runtime) and `requirements-dev.txt` |
 | `lambdas/` | AWS Lambda entry points (API and poller) that wrap the service |
 | `infra/` | Terraform for all AWS resources; `infra/bootstrap/` is one-time setup |
 | `.github/workflows/` | CI/CD (`deploy.yml` deploys on push to `main`) |
@@ -34,7 +34,7 @@ Requests are rate limited per IP (default `60 per minute;1000 per day`); exceedi
 
 ```sh
 cd service
-pip install -r requirements.txt
+pip install -r requirements-dev.txt
 python run.py            # http://127.0.0.1:4000/api/v1/
 ```
 
@@ -58,7 +58,8 @@ Regenerate the OpenAPI spec after changing endpoints: `python scripts/export_ope
 | `DATABASE_URL` | `sqlite:///dev.db` | Postgres URL in production |
 | `RATELIMIT_DEFAULT` | `60 per minute;1000 per day` | Per-IP limit |
 | `RATELIMIT_STORAGE_URI` | `memory://` | Redis URL for shared counters |
-| `CONDITIONS_RETENTION_DAYS` | `7` | Older conditions are pruned by the poller |
+| `CACHE_MAX_AGE_SECONDS` | `300` | `Cache-Control` max-age on successful GETs (also sends `ETag`) |
+| CONDITIONS_RETENTION_DAYS` | `7` | Older conditions are pruned by the poller |
 
 ## Deploying (AWS Lambda + EventBridge + free Postgres, via Terraform and GitHub Actions)
 
