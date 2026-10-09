@@ -31,14 +31,17 @@ class BaseConfig(object):
     RATELIMIT_STORAGE_URI = os.environ.get('RATELIMIT_STORAGE_URI', 'memory://')
     RATELIMIT_HEADERS_ENABLED = True
 
-    CACHE_MAX_AGE_SECONDS = int(os.environ.get('CACHE_MAX_AGE_SECONDS', '300'))
+    CACHE_MAX_AGE_SECONDS = int(os.environ.get('CACHE_MAX_AGE_SECONDS', '3600'))
 
     # Scheduler (local development only; Lambda uses EventBridge)
     SCHEDULER_ENABLED = False
     SCHEDULER_POLL_INTERVAL_MINUTES = 30
 
-    # Providers
-    ENABLE_REAL_PROVIDERS = False
+    # 'live' = OpenStreetMap resorts + Open-Meteo weather; 'mock' = fake sample data
+    DATA_SOURCE = os.environ.get('DATA_SOURCE', 'mock')
+    # Max resorts refreshed per poll (stalest first). Open-Meteo's free tier allows 10,000 locations/day
+    # and the dataset has ~3,200 resorts, so one daily poll refreshes them all
+    POLL_BATCH_SIZE = int(os.environ.get('POLL_BATCH_SIZE', '4000'))
 
     # Keep the free-tier database small
     CONDITIONS_RETENTION_DAYS = int(os.environ.get('CONDITIONS_RETENTION_DAYS', '7'))
@@ -55,6 +58,7 @@ class ProductionConfig(BaseConfig):
     """config for AWS Lambda + hosted Postgres."""
     DEBUG = False
     DEVELOPMENT = False
+    DATA_SOURCE = os.environ.get('DATA_SOURCE', 'live')
     SWAGGER_UI_JSONEDITOR = False
 
     # Lambda containers come and go; keep connections minimal and validated

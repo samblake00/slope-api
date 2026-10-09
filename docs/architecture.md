@@ -3,7 +3,7 @@
 ```
                      +-------------------+
  EventBridge  ------>|  poller Lambda    |---writes--->+------------+
- (rate 30 min)       | poll + prune      |             |  Postgres  |
+ (rate 1 day)        | poll + prune      |             |  Postgres  |
                      +-------------------+             | (Neon/     |
                                                        |  Supabase) |
  Clients --> API Gateway (HTTP API) --> API Lambda --reads-->+------------+
@@ -33,9 +33,9 @@
 Successful GETs carry Cache-Control: public, max-age=300 and an ETag, so a CDN (e.g. Cloudflare free tier) can absorb most reads.
 
 ## Data flow
-1. EventBridge triggers the poller every 30 minutes.
-2. The poller upserts resorts, inserts a conditions row per resort, and deletes conditions older than `CONDITIONS_RETENTION_DAYS`.
+1. EventBridge triggers the poller once a day.
+2. On its first run the poller seeds ~3,100 resorts from the bundled OpenStreetMap extract (service/app/data/resorts.json). Every run it fetches weather from Open-Meteo for the resorts with the oldest conditions (up to POLL_BATCH_SIZE), paced under the free-tier limit of 600 locations/minute, then deletes conditions older than CONDITIONS_RETENTION_DAYS. A full refresh takes about 6 minutes.
 3. API requests read the latest rows from Postgres.
 
 ## Adding a data provider
-Implement the interface in `service/app/providers/base.py`, then call it from `poll_providers` in `service/app/tasks.py`.
+Implement the interface in `service/app/providers/base.py` (see `osm.py` and `openmeteo.py`), then call it from `seed_resorts` / `poll_conditions` in `service/app/tasks.py`.

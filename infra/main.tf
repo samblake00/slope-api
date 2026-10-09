@@ -38,7 +38,13 @@ variable "database_url" {
 
 variable "poll_rate" {
   type    = string
-  default = "rate(30 minutes)"
+  default = "rate(1 day)"
+}
+
+variable "poll_batch_size" {
+  type        = number
+  default     = 4000
+  description = "Max resorts refreshed per poll; Open-Meteo's free tier allows 10,000 locations/day"
 }
 
 variable "api_reserved_concurrency" {
@@ -82,8 +88,9 @@ resource "aws_iam_role_policy_attachment" "logs" {
 
 locals {
   environment = {
-    APP_CONFIG   = "config.ProductionConfig"
-    DATABASE_URL = var.database_url
+    APP_CONFIG      = "config.ProductionConfig"
+    DATABASE_URL    = var.database_url
+    POLL_BATCH_SIZE = tostring(var.poll_batch_size)
   }
 }
 
@@ -113,7 +120,7 @@ resource "aws_lambda_function" "poller" {
   filename         = data.archive_file.lambda.output_path
   source_code_hash = data.archive_file.lambda.output_base64sha256
   memory_size      = 256
-  timeout          = 120
+  timeout          = 600
 
   environment {
     variables = local.environment

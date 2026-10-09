@@ -9,8 +9,6 @@ class MockProvider(ProviderBase):
                 'external_id': 'copper-mountain',
                 'name': 'Copper Mountain',
                 'location': 'Frisco, Colorado, USA',
-                'name': 'Alpine Summit',
-                'location': 'Mountain Valley',
                 'lat': 39.48,
                 'lng': -106.16,
                 'opens': '08:00',
@@ -27,7 +25,7 @@ class MockProvider(ProviderBase):
                 'opens': '08:00',
                 'closes': '16:00',
                 'total_runs': 27,
-                'website': 'https://www.coppercolorado.com/',
+                'website': 'https://www.snowyrange.com/',
             },
         ]
 

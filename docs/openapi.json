@@ -15,10 +15,24 @@
             }
           }
         },
-        "summary": "List current conditions",
+        "summary": "Latest conditions per resort (paginated)",
         "description": "Optional param: resort_id",
         "operationId": "get_conditions_resource",
         "parameters": [
+          {
+            "name": "limit",
+            "in": "query",
+            "type": "integer",
+            "description": "Page size, 1-500",
+            "default": 100
+          },
+          {
+            "name": "offset",
+            "in": "query",
+            "type": "integer",
+            "description": "Number of items to skip",
+            "default": 0
+          },
           {
             "name": "X-Fields",
             "in": "header",
@@ -79,10 +93,24 @@
             }
           }
         },
-        "summary": "List resorts",
+        "summary": "List resorts (paginated)",
         "description": "Optional query param: name (substring match)",
         "operationId": "get_resorts_resource",
         "parameters": [
+          {
+            "name": "limit",
+            "in": "query",
+            "type": "integer",
+            "description": "Page size, 1-500",
+            "default": 100
+          },
+          {
+            "name": "offset",
+            "in": "query",
+            "type": "integer",
+            "description": "Number of items to skip",
+            "default": 0
+          },
           {
             "name": "X-Fields",
             "in": "header",
@@ -134,7 +162,7 @@
   "info": {
     "title": "SlopeAPI",
     "version": "1.0",
-    "description": "Open ski resort and conditions data."
+    "description": "Open ski resort and conditions data. Resorts (c) OpenStreetMap contributors (ODbL); weather by Open-Meteo.com (CC BY 4.0)."
   },
   "produces": [
     "application/json"
@@ -166,6 +194,14 @@
         "location": {
           "type": "string",
           "description": "Location"
+        },
+        "lat": {
+          "type": "number",
+          "description": "Latitude"
+        },
+        "lng": {
+          "type": "number",
+          "description": "Longitude"
         },
         "opens": {
           "type": "string",
@@ -209,7 +245,12 @@
         },
         "status": {
           "type": "string",
-          "description": "Current status e.g., open/closed"
+          "description": "Current status e.g., open/closed (not available for most resorts)"
+        },
+        "observed_at": {
+          "type": "string",
+          "format": "date-time",
+          "description": "When the weather was observed (UTC)"
         }
       },
       "type": "object"

@@ -16,7 +16,7 @@ api_v1 = Api(
     version='1.0',
     title="SlopeAPI",
     description=(
-        "Open ski resort and conditions data."
+        "Open ski resort and conditions data. Resorts (c) OpenStreetMap contributors (ODbL); weather by Open-Meteo.com (CC BY 4.0)."
     ),
 )
 

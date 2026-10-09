@@ -35,6 +35,6 @@ def poller_handler(event, context):
     app = _get_app()
     with app.app_context():
         db.create_all()
-        poll_providers()
+        result = poll_providers(reseed=bool((event or {}).get('reseed')))
         removed = prune_conditions()
-    return {'status': 'ok', 'pruned': removed}
+    return {'status': 'ok', 'pruned': removed, **result}
