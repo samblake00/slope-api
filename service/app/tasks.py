@@ -100,14 +100,18 @@ def seed_resorts(force=False):
 def poll_conditions(batch_size=None):
     """Fetch weather for the resorts with the oldest (or no) conditions. Returns rows stored.
 
-    Refreshing a slice per run keeps us inside Open-Meteo's free daily limit."""
+    Refreshing a slice per run keeps us inside Open-Meteo's free daily limit. The slow,
+    paced fetch runs with no open database transaction, because the server drops idle
+    connections long before it finishes."""
     session = db.session
     batch_size = batch_size or current_app.config['POLL_BATCH_SIZE']
     provider = _get_provider(session, 'open-meteo', 'Open-Meteo', 'weather', 'https://api.open-meteo.com/v1/forecast')
+    provider_id = provider.id
 
-    log = FetchLog(provider_id=provider.id, started_at=datetime.utcnow(), status='running')
+    log = FetchLog(provider_id=provider_id, started_at=datetime.utcnow(), status='running')
     session.add(log)
-    session.flush()
+    session.commit()
+    log_id = log.id
 
     try:
         latest = (
@@ -115,40 +119,53 @@ def poll_conditions(batch_size=None):
             .group_by(Condition.resort_id)
             .subquery()
         )
-        resorts = (
-            session.query(Resort)
+        rows = (
+            session.query(Resort.id, Resort.external_id, Resort.lat, Resort.lng)
             .outerjoin(latest, latest.c.rid == Resort.id)
             .filter(Resort.lat.isnot(None), Resort.lng.isnot(None))
             .order_by(latest.c.last.asc().nullsfirst(), Resort.id)
             .limit(batch_size)
             .all()
         )
-        by_ext = {r.external_id: r for r in resorts}
-        conditions = OpenMeteoProvider().fetch_conditions_for(
-            [{'external_id': r.external_id, 'lat': r.lat, 'lng': r.lng} for r in resorts]
-        )
+        targets = [{'id': i, 'external_id': e, 'lat': lat, 'lng': lng} for i, e, lat, lng in rows]
+        session.commit()  # release the connection before the slow fetch
+
+        conditions = OpenMeteoProvider().fetch_conditions_for(targets)
+
+        id_by_ext = {t['external_id']: t['id'] for t in targets}
+        now = datetime.utcnow()
         stored = 0
         for cond in conditions:
-            resort = by_ext.get(cond['external_id'])
-            if resort:
-                _upsert_condition(session, provider, cond, resort)
-                stored += 1
+            resort_id = id_by_ext.get(cond['external_id'])
+            if resort_id is None:
+                continue
+            session.add(Condition(
+                resort_id=resort_id,
+                provider_id=provider_id,
+                temperature_c=cond.get('temperature_c'),
+                snow_depth_cm=cond.get('snow_depth_cm'),
+                runs_open=None,
+                status=cond.get('status'),
+                observed_at=cond.get('observed_at') or now,
+                fetched_at=now,
+            ))
+            stored += 1
 
+        log = session.get(FetchLog, log_id)
         log.finished_at = datetime.utcnow()
         log.status = 'ok'
         log.record_count = stored
-        provider.last_fetch_at = datetime.utcnow()
+        session.get(Provider, provider_id).last_fetch_at = datetime.utcnow()
         session.commit()
         return stored
     except Exception as exc:
         session.rollback()
-        log = session.merge(log)
+        log = session.get(FetchLog, log_id)
         log.finished_at = datetime.utcnow()
         log.status = 'error'
-        log.error_message = str(exc)
+        log.error_message = str(exc)[:2000]
         session.commit()
         raise
-
 
 def _poll_mock():
     session = db.session
